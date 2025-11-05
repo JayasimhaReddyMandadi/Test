@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mutual Fund Portfolio Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --primary: #4a6cf7;
+  --primary-dark: #3a5ae0;
+  --secondary: #6a11cb;
+  --success: #00c9a7;
+  --danger: #ff6b6b;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  
+  --text-primary: #0f2440;
+  --text-secondary: #617089;
+  --text-light: #8a9bb8;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fbff;
+  --bg-tertiary: #eef5ff;
+  --bg-gradient: linear-gradient(135deg, #f5f9ff 0%, #eef5ff 100%);
+  
+  --border-light: #eef3fb;
+  --border-medium: #d8e3f5;
+  
+  --shadow-sm: 0 2px 8px rgba(23, 42, 69, 0.06);
+  --shadow-md: 0 6px 18px rgba(23, 42, 69, 0.08);
+  --shadow-lg: 0 16px 50px rgba(7, 22, 52, 0.12);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --transition: all 0.3s ease;
+}
+
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-gradient);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  padding: 20px;
+}
+
+.dashboard {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 25px;
+  align-items: start;
+}
+
+/* ===== Header ===== */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 10px;
+}
+
+.header-content h1 {
+  font-size: 1.9rem;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.header-content p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.add-fund-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(106, 17, 203, 0.15);
+  transition: var(--transition);
+}
+
+.add-fund-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(106, 17, 203, 0.25);
+}
+
+/* ===== Market Strip ===== */
+.market-strip-container {
+  grid-column: 1 / -1;
+  background: var(--bg-primary);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
+}
+
+.market-strip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.market-strip-header h3 {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--text-light);
+}
+
+.status-dot.open {
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.2);
+}
+
+.status-dot.closed {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+.status-dot.updated {
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.status-dot.error {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+}
+
+.status-dot.fetching {
+  background: var(--warning);
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.status-text {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.market-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.market-index {
+  background: var(--bg-secondary);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.market-index:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm);
+}
+
+.market-index::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--primary), var(--secondary));
+}
+
+.index-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.index-name i {
+  color: var(--primary);
+}
+
+.index-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+/* ===== Summary Cards ===== */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: var(--bg-primary);
+  padding: 24px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--primary);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.card h3 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.card .value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.card .trend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trend.positive {
+  color: var(--success);
+}
+
+.trend.negative {
+  color: var(--danger);
+}
+
+/* ===== Funds Section ===== */
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title span:first-child {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+}
+
+.section-title span:last-child {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.funds-container {
+  background: var(--bg-primary);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fund-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  transition: var(--transition);
+  position: relative;
+}
+
+.fund-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--border-medium);
+}
+
+.fund-info {
+  flex: 1;
+}
+
+.fund-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.fund-type {
+  font-size: 0.8rem;
+  color: var(--primary);
+  margin-top: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(74, 108, 247, 0.1);
+  display: inline-block;
+  font-weight: 500;
+}
+
+.fund-details {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.fund-performance {
+  text-align: right;
+  min-width: 150px;
+}
+
+.performance-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.performance-percentage {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.gain-positive {
+  color: var(--success);
+}
+
+.gain-negative {
+  color: var(--danger);
+}
+
+.fund-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  font-size: 1.05rem;
+  color: var(--primary);
+  transition: var(--transition);
+}
+
+.action-btn:hover {
+  background: rgba(74, 108, 247, 0.1);
+}
+
+.action-btn.delete-btn:hover {
+  background: rgba(255, 107, 107, 0.1);
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 20, 37, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--bg-primary);
+  width: 92%;
+  max-width: 520px;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header h2 {
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.modal-body {
+  margin-top: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-medium);
+  font-size: 1rem;
+  transition: var(--transition);
+  background: var(--bg-primary);
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74, 108, 247, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(106, 17, 203, 0.2);
+}
+
+.btn-cancel {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.btn-cancel:hover {
+  background: var(--border-light);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: var(--text-primary);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: var(--transition);
+  z-index: 1500;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.success {
+  background: var(--success);
+}
+
+.toast.error {
+  background: var(--danger);
+}
+
+.toast.warning {
+  background: var(--warning);
+}
+
+/* ===== Loading States ===== */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1100px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 12px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+  
+  .user-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .market-strip {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .fund-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .fund-performance {
+    text-align: left;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .fund-actions {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content h1 {
+    font-size: 1.6rem;
+  }
+  
+  .fund-details {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .modal {
+    padding: 20px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="header">
+        <div class="header-content">
+            <h1>Mutual Fund Portfolio</h1>
+            <p>Track your investments and live market performance</p>
+        </div>
+        <div class="user-info">
+            <div class="user-avatar">AS</div>
+            <button class="add-fund-btn" id="openModalBtn"><i class="fas fa-plus"></i> Add Fund</button>
+        </div>
+    </div>
+
+    <!-- Market strip -->
+    <div class="market-strip-container">
+        <div class="market-strip-header">
+            <h3><i class="fas fa-chart-line"></i> Market Dashboard</h3>
+            <div class="status-indicator">
+                <span class="status-dot fetching" id="marketStatusDot"></span>
+                <span class="status-text" id="marketStatusText">Fetching...</span>
+            </div>
+        </div>
+
+        <div class="market-strip">
+            <div id="niftyCard" class="market-index loading">
+                <div class="index-name"><i class="fas fa-chart-line"></i> NIFTY 50</div>
+                <div class="index-value">--</div>
+                <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:0.88rem;color:var(--text-secondary);">
+                        <div>Open: <strong>--</strong></div>
+                        <div>High: <strong>--</strong></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="display:inline-block;padding:6px 8px;border-radius:8px;font-weight:700;background:rgba(0, 201, 167, 0.1);color:var(--success);">
+                            <i class="fas fa-caret-up" style="margin-right:6px;"></i>+0.00 (0.00%)
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Prev Close: <strong>--</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div id="nifty100Card" class="market-index loading">
+                <div class="index-name"><i class="fas fa-chart-line"></i> NIFTY 100</div>
+                <div class="index-value">--</div>
+                <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:0.88rem;color:var(--text-secondary);">
+                        <div>Open: <strong>--</strong></div>
+                        <div>High: <strong>--</strong></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="display:inline-block;padding:6px 8px;border-radius:8px;font-weight:700;background:rgba(0, 201, 167, 0.1);color:var(--success);">
+                            <i class="fas fa-caret-up" style="margin-right:6px;"></i>+0.00 (0.00%)
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Prev Close: <strong>--</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div id="bankNiftyCard" class="market-index loading">
+                <div class="index-name"><i class="fas fa-chart-line"></i> BANK NIFTY</div>
+                <div class="index-value">--</div>
+                <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-size:0.88rem;color:var(--text-secondary);">
+                        <div>Open: <strong>--</strong></div>
+                        <div>High: <strong>--</strong></div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="display:inline-block;padding:6px 8px;border-radius:8px;font-weight:700;background:rgba(0, 201, 167, 0.1);color:var(--success);">
+                            <i class="fas fa-caret-up" style="margin-right:6px;"></i>+0.00 (0.00%)
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Prev Close: <strong>--</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <!-- Summary cards -->
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Total Invested</h3>
+                <div class="value" id="totalInvested">₹0</div>
+                <div class="trend positive"><i class="fas fa-arrow-up"></i> 5.2% from last month</div>
+            </div>
+            <div class="card">
+                <h3>Current Value</h3>
+                <div class="value" id="totalCurrentValue">₹0</div>
+                <div class="trend positive"><i class="fas fa-arrow-up"></i> 3.8% from last week</div>
+            </div>
+            <div class="card">
+                <h3>Total Gain/Loss</h3>
+                <div class="value" id="totalGainLoss">₹0</div>
+                <div id="gainLossPercent" class="trend positive">+0.00%</div>
+            </div>
+        </div>
+
+        <!-- Funds list -->
+        <div class="funds-section">
+            <div class="section-title">
+                <span>My Fund List</span>
+                <span id="fundCount">0 Funds</span>
+            </div>
+            <div class="funds-container" id="fundsContainer">
+                <!-- Empty state initially -->
+                <div class="empty-state">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>No funds added yet</h3>
+                    <p>Start building your portfolio by adding your first mutual fund</p>
+                    <button class="add-fund-btn" id="emptyStateAddBtn"><i class="fas fa-plus"></i> Add Your First Fund</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Fund</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 6px;">Fill in the details</p>
+        </div>
+        <div class="modal-body">
+            <form id="fundForm">
+                <input type="hidden" id="fundId" />
+                <div class="form-group">    async function fetchMarketData(){
+
+                    <label for="fundName">Fund Name</label>
+                    <input id="fundName" type="text" required placeholder="e.g. SBI Bluechip Fund" />
+                </div>
+                <div class="form-group">
+                    <label for="fundType">Fund Type</label>
+                    <select id="fundType" required>
+                        <option value="">Select fund type</option>
+                        <option>Equity</option>
+                        <option>Debt</option>
+                        <option>Hybrid</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="investedAmount">Invested Amount (₹)</label>
+                    <input id="investedAmount" type="number" required placeholder="0" />
+                </div>
+                <div class="form-group">
+                    <label for="currentValue">Current Value (₹)</label>
+                    <input id="currentValue" type="number" required placeholder="0" />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-cancel" id="cancelBtn">Cancel</button>
+            <button class="btn btn-primary" id="modalSubmitBtn">Add Fund</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span>Saved</span>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Rider ID (make sure login stores this)
+    const riderId = localStorage.getItem('riderId') || '';
+    
+    if (!riderId) {
+        alert('Please login first');
+        window.location.href = '/';
+        return;
+    }
+
+    // DOM refs
+    const fundsContainer = document.getElementById('fundsContainer');
+    const fundCountEl = document.getElementById('fundCount');
+    const totalInvestedEl = document.getElementById('totalInvested');
+    const totalCurrentValueEl = document.getElementById('totalCurrentValue');
+    const totalGainLossEl = document.getElementById('totalGainLoss');
+    const gainLossPercentEl = document.getElementById('gainLossPercent');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+    const fundForm = document.getElementById('fundForm');
+    const toast = document.getElementById('toast');
+    const marketStatusDot = document.getElementById('marketStatusDot');
+    const marketStatusText = document.getElementById('marketStatusText');
+    const emptyStateAddBtn = document.getElementById('emptyStateAddBtn');
+
+    const niftyCard = document.getElementById('niftyCard');
+    const nifty100Card = document.getElementById('nifty100Card');
+    const bankNiftyCard = document.getElementById('bankNiftyCard');
+
+    let marketInterval = null;
+    let lastUpdateTime = null;
+
+    // toast helper
+    function showToast(msg, type = 'success'){
+        toast.textContent = msg;
+        toast.className = 'toast';
+        toast.classList.add(type);
+        if(type === 'success') {
+            toast.innerHTML = `<i class="fas fa-check-circle"></i> <span>${msg}</span>`;
+        } else if(type === 'error') {
+            toast.innerHTML = `<i class="fas fa-exclamation-circle"></i> <span>${msg}</span>`;
+        } else if(type === 'warning') {
+            toast.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>${msg}</span>`;
+        }
+        toast.classList.add('show');
+        setTimeout(()=> toast.classList.remove('show'), 3000);
+    }
+
+    // Update market status UI
+    function updateMarketStatus(status, message = '') {
+        marketStatusDot.className = 'status-dot';
+        
+        switch(status) {
+            case 'fetching':
+                marketStatusDot.classList.add('fetching');
+                marketStatusText.textContent = 'Fetching...';
+                break;
+            case 'updated':
+                marketStatusDot.classList.add('updated');
+                marketStatusText.textContent = message || 'Updated';
+                lastUpdateTime = new Date();
+                break;
+            case 'error':
+                marketStatusDot.classList.add('error');
+                marketStatusText.textContent = message || 'Error fetching data';
+                break;
+            case 'open':
+                marketStatusDot.classList.add('open');
+                marketStatusText.textContent = 'Market Open';
+                break;
+            case 'closed':
+                marketStatusDot.classList.add('closed');
+                marketStatusText.textContent = 'Market Closed';
+                break;
+            default:
+                marketStatusDot.classList.add('fetching');
+                marketStatusText.textContent = 'Fetching...';
+        }
+    }
+
+    // Modal open/close
+    function openModal(mode='add', fund = null){
+        fundForm.reset();
+        if(mode === 'add'){
+            modalTitle.textContent = 'Add New Fund';
+            modalSubmitBtn.textContent = 'Add Fund';
+            document.getElementById('fundId').value = '';
+        } else {
+            modalTitle.textContent = 'Edit Fund';
+            modalSubmitBtn.textContent = 'Update Fund';
+            document.getElementById('fundId').value = fund.id;
+            document.getElementById('fundName').value = fund.name;
+            document.getElementById('fundType').value = fund.fund_type;
+            document.getElementById('investedAmount').value = fund.invested_amount;
+            document.getElementById('currentValue').value = fund.current_value;
+        }
+        modalOverlay.classList.add('active');
+    }
+    function closeModal(){ modalOverlay.classList.remove('active'); fundForm.reset(); }
+
+    document.getElementById('openModalBtn').addEventListener('click', ()=> openModal('add'));
+    emptyStateAddBtn.addEventListener('click', ()=> openModal('add'));
+    document.getElementById('cancelBtn').addEventListener('click', (e)=> { e.preventDefault(); closeModal(); });
+    modalOverlay.addEventListener('click', (e)=> { if(e.target === modalOverlay) closeModal(); });
+
+    // Utility: format rupee (no currency symbol used for numeric fields)
+    function toLocaleINR(num){
+        try { return Number(num).toLocaleString('en-IN', {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
+        catch { return num; }
+    }
+
+    // Create fund card element
+    function createFundCard(fund){
+        const invested = parseFloat(fund.invested_amount) || 0;
+        const current = parseFloat(fund.current_value) || 0;
+        const gain = current - invested;
+        const pct = invested ? ((gain / invested) * 100).toFixed(2) : '0.00';
+        const gainClass = gain >= 0 ? 'gain-positive' : 'gain-negative';
+
+        const div = document.createElement('div');
+        div.className = 'fund-item';
+        div.dataset.id = fund.id;
+
+        div.innerHTML = `
+            <div class="fund-info">
+                <div class="fund-name">${escapeHtml(fund.name)}</div>
+                <div class="fund-type">${escapeHtml(fund.fund_type)}</div>
+                <div class="fund-details">
+                    <div class="detail-item"><div class="detail-label">Invested</div><div class="detail-value">₹${toLocaleINR(invested)}</div></div>
+                    <div class="detail-item"><div class="detail-label">Current</div><div class="detail-value">₹${toLocaleINR(current)}</div></div>
+                </div>
+            </div>
+            <div class="fund-performance">
+                <div class="performance-value ${gainClass}">₹${toLocaleINR(gain)}</div>
+                <div class="performance-percentage ${gainClass}">${gain>=0?'+':''}${pct}%</div>
+            </div>
+            <div class="fund-actions">
+                <button class="action-btn edit-btn" aria-label="Edit fund"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete-btn" aria-label="Delete fund" style="color:var(--danger);"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+
+        // Edit
+        div.querySelector('.edit-btn').addEventListener('click', () => {
+            // supply exact fields expected by modal
+            openModal('edit', {
+                id: fund.id,
+                name: fund.name,
+                fund_type: fund.fund_type,
+                invested_amount: fund.invested_amount,
+                current_value: fund.current_value
+            });
+        });
+
+        // Delete
+        div.querySelector('.delete-btn').addEventListener('click', async () => {
+            if(!confirm('Are you sure you want to delete this fund?')) return;
+            try {
+                const res = await fetch('/api/funds/delete/', {
+                    method: 'DELETE',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({rider_id: riderId, fund_id: fund.id})
+                });
+                if(res.ok){
+                    div.remove();
+                    updateFundCount();
+                    await loadSummaryData();
+                    showToast('Fund deleted', 'success');
+                    
+                    // Show empty state if no funds left
+                    if(fundsContainer.children.length === 0) {
+                        showEmptyState();
+                    }
+                } else {
+                    const err = await res.json().catch(()=>({error:'Delete failed'}));
+                    console.error('Delete failed', err);
+                    showToast(err.error || 'Failed to delete fund', 'error');
+                }
+            } catch (err){
+                console.error('Network delete error', err);
+                showToast('Could not delete fund (network error).', 'error');
+            }
+        });
+
+        return div;
+    }
+
+    // Show empty state
+    function showEmptyState() {
+        fundsContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-chart-pie"></i>
+                <h3>No funds added yet</h3>
+                <p>Start building your portfolio by adding your first mutual fund</p>
+                <button class="add-fund-btn" id="emptyStateAddBtn"><i class="fas fa-plus"></i> Add Your First Fund</button>
+            </div>
+        `;
+        document.getElementById('emptyStateAddBtn').addEventListener('click', () => openModal('add'));
+    }
+
+    // Escape helper (very small)
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+    // Load funds and render
+    async function loadFunds(){
+        try {
+            const res = await fetch(`/api/funds/?rider_id=${riderId}`);
+            if(!res.ok) throw new Error('Failed to fetch funds');
+            const funds = await res.json();
+            
+            fundsContainer.innerHTML = '';
+            
+            if(funds.length === 0) {
+                showEmptyState();
+            } else {
+                funds.forEach(f => fundsContainer.appendChild(createFundCard(f)));
+            }
+            
+            updateFundCount();
+        } catch(err){
+            console.error('loadFunds', err);
+            fundsContainer.innerHTML = `<div style="color:var(--danger);padding:20px;text-align:center;">Could not load funds. Please try again later.</div>`;
+        }
+    }
+
+    function updateFundCount(){
+        const count = fundsContainer.querySelectorAll('.fund-item').length;
+        fundCountEl.textContent = `${count} Fund${count !== 1 ? 's' : ''}`;
+    }
+
+    // Load portfolio summary
+    async function loadSummaryData(){
+        try {
+            const res = await fetch(`/api/portfolio/summary/?rider_id=${riderId}`);
+            if(!res.ok) throw new Error('summary failed');
+            const s = await res.json();
+            // Use keys from your API
+            totalInvestedEl.textContent = `₹${toLocaleINR(s.total_invested)}`;
+            totalCurrentValueEl.textContent = `₹${toLocaleINR(s.total_current_value)}`;
+            totalGainLossEl.textContent = `₹${toLocaleINR(s.total_gain_loss)}`;
+            const pct = (s.total_gain_loss_percentage !== undefined) ? (s.total_gain_loss_percentage).toFixed(2) : '0.00';
+            gainLossPercentEl.textContent = `${s.total_gain_loss >= 0 ? '+' : ''}${pct}%`;
+            // colorize
+            const gainClass = (parseFloat(s.total_gain_loss) >= 0) ? 'positive' : 'negative';
+            gainLossPercentEl.className = `trend ${gainClass}`;
+            gainLossPercentEl.innerHTML = (parseFloat(s.total_gain_loss) >= 0 ? 
+                `<i class="fas fa-arrow-up"></i> ${pct}%` : 
+                `<i class="fas fa-arrow-down"></i> ${pct}%`);
+        } catch(err){
+            console.error('loadSummaryData', err);
+        }
+    }
+
+    // Market data
+    async function fetchMarketData(){
+        updateMarketStatus('fetching');
+        
+        try {
+            const res = await fetch('/api/market-data/');
+            if(!res.ok) throw new Error('market fetch failed');
+            const data = await res.json();
+
+            // Remove loading states
+            [niftyCard, nifty100Card, bankNiftyCard].forEach(card => {
+                card.classList.remove('loading');
+            });
+
+            // marketStatus can be a string; handle gracefully
+            const status = (data.marketStatus || data.market_status || 'Unavailable').toString();
+            
+            if(status.toLowerCase().includes('open')) {
+                updateMarketStatus('open');
+            } else if(status.toLowerCase().includes('closed')) {
+                updateMarketStatus('closed');
+            } else {
+                updateMarketStatus('updated', 'Data Loaded');
+            }
+
+            if(data.nifty50) updateIndexUI(niftyCard, data.nifty50, 'NIFTY 50');
+            if(data.nifty100) updateIndexUI(nifty100Card, data.nifty100, 'NIFTY 100');
+            if(data.bankNifty) updateIndexUI(bankNiftyCard, data.bankNifty, 'BANK NIFTY');
+
+            // stop interval if closed
+            if(typeof status === 'string' && status.toLowerCase().includes('closed') && marketInterval){
+                clearInterval(marketInterval);
+                marketInterval = null;
+                console.log('Market closed. Stopped updates.');
+            }
+        } catch(err){
+            console.error('fetchMarketData', err);
+            updateMarketStatus('error', 'Failed to load data');
+            
+            // Show error in index cards
+            [niftyCard, nifty100Card, bankNiftyCard].forEach(card => {
+                card.classList.remove('loading');
+                card.innerHTML = `
+                    <div class="index-name"><i class="fas fa-exclamation-triangle"></i> ${card.id.replace('Card', '').toUpperCase()}</div>
+                    <div class="index-value" style="color:var(--danger);">Failed to load</div>
+                    <div style="margin-top:10px;text-align:center;color:var(--text-secondary);">
+                        <i class="fas fa-redo" style="cursor:pointer;" onclick="fetchMarketData()"></i> Retry
+                    </div>
+                `;
+            });
+        }
+    }
+
+    function updateIndexUI(container, idx, defaultName){
+        // idx expected: { name, value, change, percentChange, open, high, low, prevClose }
+        const name = idx.name || defaultName;
+        const value = Number(idx.value) || 0;
+        const change = Number(idx.change) || 0;
+        const percentChange = Number(idx.percentChange) || 0;
+        const open = Number(idx.open) || 0;
+        const high = Number(idx.high) || 0;
+        const low = Number(idx.low) || 0;
+        const prevClose = Number(idx.prevClose) || 0;
+        
+        const changePos = change >= 0;
+        const changeClass = changePos ? 'positive' : 'negative';
+        const icon = changePos ? 'fa-caret-up' : 'fa-caret-down';
+        const formattedValue = value.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+        const changeText = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${percentChange.toFixed(2)}%)`;
+
+        container.innerHTML = `
+            <div class="index-name"><i class="fas fa-chart-line"></i> ${escapeHtml(name)}</div>
+            <div class="index-value">₹ ${formattedValue}</div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.88rem;color:var(--text-secondary);">
+                    <div>Open: <strong>${open.toLocaleString('en-IN')}</strong></div>
+                    <div>High: <strong>${high.toLocaleString('en-IN')}</strong></div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="display:inline-block;padding:6px 8px;border-radius:8px;font-weight:700;background:${changePos? 'rgba(0, 201, 167, 0.1)' : 'rgba(255, 107, 107, 0.1)'};color:${changePos? 'var(--success)' : 'var(--danger)'};">
+                        <i class="fas ${icon}" style="margin-right:6px;"></i>${changeText}
+                    </div>
+                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">Prev Close: <strong>${prevClose.toLocaleString('en-IN')}</strong></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Save / Update fund (handles add + edit)
+    modalSubmitBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('fundId').value;
+        const payload = {
+            name: document.getElementById('fundName').value.trim(),
+            fund_type: document.getElementById('fundType').value,
+            invested_amount: document.getElementById('investedAmount').value,
+            current_value: document.getElementById('currentValue').value
+        };
+
+        if(!payload.name || !payload.fund_type || !payload.invested_amount || !payload.current_value){
+            showToast('Please fill all required fields.', 'error');
+            return;
+        }
+
+        const url = id ? `/api/funds/update/${id}/` : '/api/funds/add/';
+        const payloadWithRider = { ...payload, rider_id: riderId };
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(payloadWithRider)
+            });
+
+            if(!res.ok){
+                const err = await res.json().catch(()=>({detail:'Save failed'}));
+                console.error('save error', err);
+                showToast(err.detail || err.error || 'Failed to save fund', 'error');
+                return;
+            }
+
+            const data = await res.json();
+
+            if(id){
+                const old = document.querySelector(`.fund-item[data-id="${id}"]`);
+                if(old) old.replaceWith(createFundCard(data));
+                showToast('Fund updated', 'success');
+            } else {
+                // Remove empty state if it exists
+                if(fundsContainer.querySelector('.empty-state')) {
+                    fundsContainer.innerHTML = '';
+                }
+                fundsContainer.prepend(createFundCard(data));
+                showToast('Fund added', 'success');
+            }
+            updateFundCount();
+            await loadSummaryData();
+            closeModal();
+        } catch(err){
+            console.error('save network error', err);
+            showToast('Network error while saving fund', 'error');
+        }
+    });
+
+    // Initialize all
+    (async function init(){
+        await loadFunds();
+        await loadSummaryData();
+        await fetchMarketData();
+        if(!marketInterval) marketInterval = setInterval(fetchMarketData, 60000);
+    })();
+
+});
+</script>
+</body>
+</html>

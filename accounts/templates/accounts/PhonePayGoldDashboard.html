@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhonePe Gold Investment Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3a8a, #7e22ce);
+            font-family: 'Inter', sans-serif;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            max-width: 1300px;
+            margin: 60px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .dashboard-header {
+            background: linear-gradient(90deg, #3b82f6, #a855f7);
+            color: #ffffff;
+            padding: 50px 20px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+            position: relative;
+            margin-bottom: 40px;
+        }
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/subtle-white-feathers.png');
+            opacity: 0.1;
+        }
+        .dashboard-header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+        }
+        .dashboard-header p {
+            font-size: 1.2rem;
+            font-weight: 300;
+            opacity: 0.85;
+            position: relative;
+            margin-top: 10px;
+        }
+        .provider-card {
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border: none;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            overflow: hidden;
+            position: relative;
+        }
+        .provider-card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        }
+        .provider-header {
+            background: linear-gradient(90deg, #facc15, #f97316);
+            color: #1f2937;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+        }
+        .card-body {
+            padding: 30px;
+            position: relative;
+        }
+        .card-body p {
+            margin: 12px 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-body p::before {
+            content: '•';
+            color: #3b82f6;
+            font-size: 1.5rem;
+        }
+        .gain-positive {
+            color: #22c55e;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .gain-negative {
+            color: #ef4444;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+        .total-summary {
+            background: #f5f5f5;
+            color: #111827;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 50px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            font-family: 'Roboto', sans-serif;
+        }
+        .total-summary h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+        .total-summary p {
+            font-size: 1.2rem;
+            font-weight: 400;
+            margin: 10px 0;
+        }
+        .btn-details {
+            background: #3b82f6;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ffffff;
+            transition: background 0.3s ease, transform 0.2s ease;
+            margin-top: 15px;
+        }
+        .btn-details:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        .details-content {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #475569;
+            border-left: 4px solid #3b82f6;
+            transition: max-height 0.3s ease;
+            overflow: hidden;
+        }
+        .recent-transactions {
+            margin-top: 50px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        .recent-transactions h3 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .recent-transactions table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .recent-transactions th, .recent-transactions td {
+            padding: 12px;
+            text-align: left;
+            font-size: 1rem;
+        }
+        .recent-transactions th {
+            background: #3b82f6;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .recent-transactions td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .recent-transactions tr:last-child td {
+            border-bottom: none;
+        }
+        .row.gap-row {
+            margin-left: -20px;
+            margin-right: -20px;
+        }
+        .row.gap-row > .col-md-4 {
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-bottom: 40px;
+        }
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 30px 15px;
+                padding: 20px;
+            }
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            .provider-card {
+                margin-bottom: 20px;
+            }
+            .card-body p {
+                font-size: 1rem;
+            }
+            .row.gap-row {
+                margin-left: -10px;
+                margin-right: -10px;
+            }
+            .row.gap-row > .col-md-4 {
+                padding-left: 10px;
+                padding-right: 10px;
+                margin-bottom: 20px;
+            }
+            .recent-transactions {
+                padding: 20px;
+            }
+            .recent-transactions th, .recent-transactions td {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>PhonePe Gold Investment Dashboard</h1>
+            <p>Your gateway to tracking gold investments with MMTC-PAMP, SafeGold, and CaratLane</p>
+        </div>
+
+        <!-- Provider Cards -->
+        <div class="row gap-row">
+            <!-- MMTC-PAMP Card -->
+            <div class="col-md-4">
+                <div class="provider-card">
+                    <div class="provider-header">MMTC-PAMP</div>
+                    <div class="card-body">
+                        <p><strong>Invested Amount:</strong> ₹10,000</p>
+                        <p><strong>Current Value:</strong> ₹10,500</p>
+                        <p><strong>Gain/Loss:</strong> <span class="gain-positive">+₹500 (+5%)</span></p>
+                        <button class="btn btn-details" onclick="showDetails('mmtc')">View Details</button>
+                        <div id="mmtc-details" class="details-content" style="display: none;">
+                            <p>Purity: 99.99% | Storage: Secure Vault | Last Updated: Oct 13, 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SafeGold Card -->
+            <div class="col-md-4">
+                <div class="provider-card">
+                    <div class="provider-header">SafeGold</div>
+                    <div class="card-body">
+                        <p><strong>Invested Amount:</strong> ₹15,000</p>
+                        <p><strong>Current Value:</strong> ₹14,700</p>
+                        <p><strong>Gain/Loss:</strong> <span class="gain-negative">-₹300 (-2%)</span></p>
+                        <button class="btn btn-details" onclick="showDetails('safegold')" >View Details</button>
+                        <div id="safegold-details" class="details-content" style="display: none;">
+                            <p>Purity: 24K | Redemption: Easy | Last Updated: Oct 13, 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CaratLane Card -->
+            <div class="col-md-4">
+                <div class="provider-card">
+                    <div class="provider-header">CaratLane</div>
+                    <div class="card-body">
+                        <p><strong>Invested Amount:</strong> ₹20,000</p>
+                        <p><strong>Current Value:</strong> ₹21,200</p>
+                        <p><strong>Gain/Loss:</strong> <span class="gain-positive">+₹1,200 (+6%)</span></p>
+                        <button class="btn btn-details" onclick="showDetails('caratlane')">View Details</button>
+                        <div id="caratlane-details" class="details-content" style="display: none;">
+                            <p>Linked to Jewelry | Purity: 24K | Last Updated: Oct 13, 2025</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="recent-transactions">
+            <h3>Recent Transactions</h3>
+
+            <!-- Add Transaction Form -->
+            <div class="mb-4">
+                <input type="date" id="txn-date" class="form-control mb-2" placeholder="Date">
+                <input type="text" id="txn-provider" class="form-control mb-2" placeholder="Provider (e.g., MMTC-PAMP)">
+                <input type="number" id="txn-amount" class="form-control mb-2" placeholder="Amount Added">
+                <input type="text" id="txn-id" class="form-control mb-2" placeholder="Transaction ID">
+                <button class="btn btn-details" onclick="addTransaction()">Add Transaction</button>
+            </div>
+
+            <table id="txn-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Provider</th>
+                        <th>Amount Added</th>
+                        <th>Transaction ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>October 10, 2025</td>
+                        <td>MMTC-PAMP</td>
+                        <td>₹5,000</td>
+                        <td>TXN123456789</td>
+                    </tr>
+                    <tr>
+                        <td>October 5, 2025</td>
+                        <td>SafeGold</td>
+                        <td>₹3,000</td>
+                        <td>TXN987654321</td>
+                    </tr>
+                    <tr>
+                        <td>September 25, 2024</td>
+                        <td>CaratLane</td>
+                        <td>₹7,000</td>
+                        <td>TXN456789123</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total Summary -->
+        <div class="total-summary">
+            <h3>Total Investment Summary</h3>
+            <p><strong>Total Invested:</strong> ₹45,000</p>
+            <p><strong>Total Current Value:</strong> ₹46,400</p>
+            <p><strong>Overall Gain/Loss:</strong> <span class="gain-positive">+₹1,400 (+3.11%)</span></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        function showDetails(provider) {
+            const details = document.getElementById(`${provider}-details`);
+            details.style.display = details.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addTransaction() {
+            const date = document.getElementById('txn-date').value;
+            const provider = document.getElementById('txn-provider').value;
+            const amount = document.getElementById('txn-amount').value;
+            const txnId = document.getElementById('txn-id').value;
+
+            if (!date || !provider || !amount || !txnId) {
+                alert('Please fill in all fields!');
+                return;
+            }
+
+            const table = document.getElementById('txn-table').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow(0); // Add at top
+
+            newRow.insertCell(0).innerText = date;
+            newRow.insertCell(1).innerText = provider;
+            newRow.insertCell(2).innerText = `₹${parseFloat(amount).toLocaleString()}`;
+            newRow.insertCell(3).innerText = txnId;
+
+            // Clear inputs
+            document.getElementById('txn-date').value = '';
+            document.getElementById('txn-provider').value = '';
+            document.getElementById('txn-amount').value = '';
+            document.getElementById('txn-id').value = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #007BFF;
+            --primary-green: #28A745;
+            --primary-gold: #FFC107;
+            --text-dark: #212529;
+            --text-gray: #6C757D;
+            --bg-light: #F8F9FA;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 16px 0;
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .navbar-user {
+            font-size: 28px;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+
+        .hero-section {
+            padding: 60px 0 40px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--text-gray);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .card-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            background-color: var(--white);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 30px 25px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .card-text {
+            font-size: 16px;
+            color: var(--text-gray);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .card-action {
+            font-weight: 600;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .card-action:hover {
+            gap: 12px;
+        }
+
+        /* Card-specific colors */
+        .expenses .card-icon {
+            color: var(--primary-blue);
+        }
+        .expenses .card-action {
+            color: var(--primary-blue);
+        }
+
+        .mutual-funds .card-icon {
+            color: var(--primary-green);
+        }
+        .mutual-funds .card-action {
+            color: var(--primary-green);
+        }
+
+        .gold-investments .card-icon {
+            color: var(--primary-gold);
+        }
+        .gold-investments .card-action {
+            color: var(--primary-gold);
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #E9ECEF;
+            margin: 40px 0;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 28px;
+            }
+            
+            .hero-subtitle {
+                font-size: 16px;
+            }
+            
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="d-flex justify-content-between w-100 align-items-center">
+                <a class="navbar-brand" href="#">Finance Dashboard</a>
+                <a href="/profile/">
+                <i class="fas fa-user-circle navbar-user"></i>
+            </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Welcome to Your Financial Hub</h1>
+            <p class="hero-subtitle">Manage your finances with ease. Choose from our comprehensive tools to track expenses, monitor investments, and grow your wealth.</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="card-container">
+        <div class="row g-4">
+            <!-- Daily Expenses Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card expenses" onclick="selectSection('expenses')">
+                    <div>
+                        <i class="fas fa-wallet card-icon"></i>
+                        <h2 class="card-title">Daily Expenses</h2>
+                        <p class="card-text">Track your daily spending habits and categorize expenses to better understand your financial patterns.</p>
+                    </div>
+                    <a href="{% url 'daily-expense-dashboard' %}" class="card-action">
+                        Get Started <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Mutual Funds Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card mutual-funds" onclick="selectSection('mutual-funds')">
+                    <div>
+                        <i class="fas fa-chart-line card-icon"></i>
+                        <h2 class="card-title">Mutual Fund Investments</h2>
+                        <p class="card-text">Monitor your mutual fund portfolio performance and make informed investment decisions for long-term growth.</p>
+                    </div>
+                    <a href="{% url 'mutual_fund_dashboard' %}" class="card-action">
+                        View Portfolio <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Gold Investments Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card gold-investments" onclick="selectSection('gold-investments')">
+                    <div>
+                        <i class="fas fa-coins card-icon"></i>
+                        <h2 class="card-title">PhonePe Gold Investments</h2>
+                        <p class="card-text">Invest in digital gold through PhonePe and track your precious metal investments in real-time.</p>
+                    </div>
+                    <a href="{% url 'phonepay-gold-dashboard' %}" class="card-action">
+                        Manage Gold <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Divider line -->
+        <div class="divider"></div>
+    </div>
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Basic interactivity for card clicks
+        function selectSection(section) {
+            // Remove active class from all cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Add active class to the clicked card
+            const selectedCard = document.querySelector(`.${section}`);
+            selectedCard.classList.add('active');
+
+            // Optional: Add logic for section navigation (e.g., redirect or show content)
+            console.log(`Selected section: ${section}`);
+            // Example: You can extend this to show specific section content
+        }
+    </script>
+</body>
+</html>
