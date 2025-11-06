@@ -7,7 +7,7 @@ from django.db.models import Sum, DecimalField
 from django.contrib.auth.models import User
 from django.db.models.functions import Coalesce
 from rest_framework import views, status
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -15,7 +15,7 @@ from rest_framework.permissions import AllowAny
 import requests
 
 
-from .models import Income, Expense, MutualFund, Profile
+from .models import Income, Expense, MutualFund, Profile, RiderInfo
 from .serializers import UserSerializer, IncomeSerializer, ExpenseSerializer,MutualFundSerializer,UserProfileSerializer,ChangeEmailSerializer,ChangePasswordSerializer
 
 # Helper function to get user by rider_id
@@ -131,8 +131,8 @@ class LoginView(views.APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class ProfileView(views.APIView):
     permission_classes = [AllowAny]
-    # Add parsers to handle file uploads
-    parser_classes = [MultiPartParser, FormParser]
+    # Add parsers to handle JSON, file uploads, and form data
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request, *args, **kwargs):
         """
@@ -148,6 +148,30 @@ class ProfileView(views.APIView):
         
         serializer = UserProfileSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles POST requests to update user profile info.
+        """
+        rider_id = request.data.get('rider_id')
+        if not rider_id:
+            return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = get_user_by_rider_id(rider_id)
+        if not user:
+            return Response({'error': 'Invalid rider_id'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # We pass request.data directly, which can include files
+        serializer = UserProfileSerializer(user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Profile updated successfully',
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
         """
@@ -177,7 +201,7 @@ class ChangeEmailView(views.APIView):
     """
     permission_classes = [AllowAny]
 
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         rider_id = request.data.get('rider_id')
         if not rider_id:
             return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -199,6 +223,14 @@ class ChangeEmailView(views.APIView):
             # --- THIS IS WHERE THE DATABASE IS UPDATED ---
             user.email = new_email
             user.save() # This command saves the change to the database
+            
+            # Also update RiderInfo if it exists
+            try:
+                rider_info = user.rider_info
+                rider_info.email = new_email
+                rider_info.save()
+            except RiderInfo.DoesNotExist:
+                pass
             # ---------------------------------------------
             
             return Response({"message": "Email updated successfully", "email": user.email}, status=status.HTTP_200_OK)
@@ -561,6 +593,96 @@ def market_data_api(request):
 def home(request):
     return JsonResponse({"message": "Welcome to the Expense Tracker API"})
 
+# --- Personal Information APIs ---
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def get_personal_info(request):
+    """
+    API to get personal information (first_name, last_name, username, email)
+    Pass rider_id in request body
+    """
+    rider_id = request.data.get('rider_id')
+    if not rider_id:
+        return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = get_user_by_rider_id(rider_id)
+    if not user:
+        return Response({'error': 'Invalid rider_id'}, status=status.HTTP_404_NOT_FOUND)
+    
+    return Response({
+        'rider_id': rider_id,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'username': user.username,
+        'email': user.email
+    }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def update_personal_info(request):
+    """
+    API to update personal information (first_name and last_name only)
+    """
+    rider_id = request.data.get('rider_id')
+    if not rider_id:
+        return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user = get_user_by_rider_id(rider_id)
+    if not user:
+        return Response({'error': 'Invalid rider_id'}, status=status.HTTP_404_NOT_FOUND)
+    
+    first_name = request.data.get('first_name')
+    last_name = request.data.get('last_name')
+    
+    # Validate that at least one field is provided
+    if not first_name and not last_name:
+        return Response({
+            'error': 'At least one field (first_name or last_name) is required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Validate field lengths and content
+    errors = {}
+    if first_name is not None:
+        if not first_name.strip():
+            errors['first_name'] = 'First name cannot be empty'
+        elif len(first_name.strip()) > 150:
+            errors['first_name'] = 'First name cannot exceed 150 characters'
+    
+    if last_name is not None:
+        if not last_name.strip():
+            errors['last_name'] = 'Last name cannot be empty'
+        elif len(last_name.strip()) > 150:
+            errors['last_name'] = 'Last name cannot exceed 150 characters'
+    
+    if errors:
+        return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Update the user fields
+    if first_name is not None:
+        user.first_name = first_name.strip()
+    if last_name is not None:
+        user.last_name = last_name.strip()
+    
+    user.save()
+    
+    # Also update RiderInfo if it exists
+    try:
+        rider_info = user.rider_info
+        rider_info.save()  # This will trigger the last_activity update
+    except RiderInfo.DoesNotExist:
+        pass
+    
+    return Response({
+        'message': 'Personal information updated successfully',
+        'data': {
+            'rider_id': rider_id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'username': user.username,
+            'email': user.email
+        }
+    }, status=status.HTTP_200_OK)
+
 # --- Get User Info by Rider ID API ---
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -590,28 +712,101 @@ def get_user_info(request):
 def get_all_riders(request):
     """Get all riders with their basic info"""
     try:
-        profiles = Profile.objects.select_related('user').all()
+        riders_info = RiderInfo.objects.select_related('user').all()
         riders_data = []
         
-        for profile in profiles:
-            user = profile.user
+        for rider_info in riders_info:
+            user = rider_info.user
+            try:
+                profile = user.profile
+                location = profile.location
+                profile_created = profile.created_at
+            except Profile.DoesNotExist:
+                location = ""
+                profile_created = None
+            
             riders_data.append({
-                'rider_id': profile.rider_id,
+                'rider_id': rider_info.rider_id,
                 'user_id': user.pk,
-                'username': user.username,
-                'email': user.email,
+                'username': rider_info.username,
+                'email': rider_info.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
                 'date_joined': user.date_joined,
                 'last_login': user.last_login,
-                'location': profile.location
+                'location': location,
+                'is_active': rider_info.is_active,
+                'rider_created_at': rider_info.created_at,
+                'last_activity': rider_info.last_activity
             })
         
         return Response({
             'total_riders': len(riders_data),
+            'active_riders': len([r for r in riders_data if r['is_active']]),
             'riders': riders_data
         }, status=status.HTTP_200_OK)
         
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- Get Rider by Email ---
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_rider_by_email(request):
+    """Get rider information by email"""
+    email = request.GET.get('email')
+    if not email:
+        return Response({'error': 'email is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        rider_info = RiderInfo.objects.select_related('user').get(email=email)
+        user = rider_info.user
+        
+        return Response({
+            'rider_id': rider_info.rider_id,
+            'user_id': user.pk,
+            'username': rider_info.username,
+            'email': rider_info.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'is_active': rider_info.is_active,
+            'date_joined': user.date_joined,
+            'last_login': user.last_login,
+            'rider_created_at': rider_info.created_at,
+            'last_activity': rider_info.last_activity
+        }, status=status.HTTP_200_OK)
+        
+    except RiderInfo.DoesNotExist:
+        return Response({'error': 'No rider found with this email'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# --- Verify Rider ID and Email Match ---
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_rider_email(request):
+    """Verify that rider_id and email belong to the same user"""
+    rider_id = request.data.get('rider_id')
+    email = request.data.get('email')
+    
+    if not rider_id or not email:
+        return Response({'error': 'Both rider_id and email are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        rider_info = RiderInfo.objects.get(rider_id=rider_id, email=email)
+        return Response({
+            'verified': True,
+            'rider_id': rider_info.rider_id,
+            'email': rider_info.email,
+            'username': rider_info.username,
+            'user_id': rider_info.user.pk
+        }, status=status.HTTP_200_OK)
+        
+    except RiderInfo.DoesNotExist:
+        return Response({
+            'verified': False,
+            'error': 'Rider ID and email do not match'
+        }, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         

@@ -81,12 +81,33 @@ class UserSerializer(serializers.ModelSerializer):
         
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    location = serializers.CharField(source='profile.location', required=False, allow_blank=True)
+    rider_id = serializers.CharField(source='profile.rider_id', read_only=True)
+    
     class Meta:
         model = User
         # Specify the fields to be returned and updated
-        fields = ['username', 'email', 'first_name', 'last_name']
+        fields = ['username', 'email', 'first_name', 'last_name', 'location', 'rider_id']
         # Make username and email read-only as they shouldn't be changed here
-        read_only_fields = ['username', 'email','first_name','last_name']
+        read_only_fields = ['username', 'email', 'rider_id']
+    
+    def update(self, instance, validated_data):
+        # Handle profile data separately
+        profile_data = validated_data.pop('profile', {})
+        
+        # Update user fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update profile fields
+        if profile_data:
+            profile = instance.profile
+            for attr, value in profile_data.items():
+                setattr(profile, attr, value)
+            profile.save()
+        
+        return instance
 
 class ChangeEmailSerializer(serializers.Serializer):
     """

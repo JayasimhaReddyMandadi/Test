@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     RegisterView, LoginView,ProfileView,ChangeEmailView,ChangePasswordView,DeleteAccountView,
     add_income, add_expense,
-    dashboard_data, recent_transactions, get_user_info, get_all_riders,
+    dashboard_data, recent_transactions, get_user_info, get_all_riders, get_rider_by_email, verify_rider_email,
+    get_personal_info, update_personal_info,
     login_page, register_page, dashboard_selection_page, daily_expense_dashboard_page,phonepay_gold_dashboard,mutualfund_dashboard,add_fund_api,funds_list_api,delete_fund_api,portfolio_summary_api,
     market_data_api,update_fund_api,profile_page,
 )
@@ -13,6 +14,10 @@ urlpatterns = [
     path('api/login/', LoginView.as_view(), name='api-login'),
     path('api/user-info/', get_user_info, name='api-user-info'),
     path('api/riders/all/', get_all_riders, name='api-all-riders'),
+    path('api/riders/by-email/', get_rider_by_email, name='api-rider-by-email'),
+    path('api/riders/verify/', verify_rider_email, name='api-verify-rider-email'),
+    path('api/personal-info/', get_personal_info, name='api-get-personal-info'),
+    path('api/personal-info/update/', update_personal_info, name='api-update-personal-info'),
     path('api/profile/', ProfileView.as_view(), name='api-profile'),
     path('api/income/add/', add_income, name='api-add-income'),
     path('api/expense/add/', add_expense, name='api-add-expense'),
