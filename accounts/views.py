@@ -245,7 +245,7 @@ class ChangePasswordView(views.APIView):
     """
     permission_classes = [AllowAny]
 
-    def put(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         rider_id = request.data.get('rider_id')
         if not rider_id:
             return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -278,25 +278,34 @@ class ChangePasswordView(views.APIView):
 class DeleteAccountView(views.APIView):
     """
     This is the API endpoint for permanently deleting a user account.
+    Requires password confirmation for security.
     """
     permission_classes = [AllowAny]
 
-    def delete(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         rider_id = request.data.get('rider_id')
+        current_password = request.data.get('current_password')
+        
         if not rider_id:
             return Response({'error': 'rider_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not current_password:
+            return Response({'error': 'current_password is required for account deletion'}, status=status.HTTP_400_BAD_REQUEST)
         
         user = get_user_by_rider_id(rider_id)
         if not user:
             return Response({'error': 'Invalid rider_id'}, status=status.HTTP_404_NOT_FOUND)
         
+        # Verify password before deletion
+        if not user.check_password(current_password):
+            return Response({'error': 'Incorrect password. Account deletion cancelled.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
         # --- THIS IS WHERE THE USER AND ALL THEIR DATA ARE DELETED ---
         user.delete()
         # -----------------------------------------------------------
         
-        # Return a success message with a "204 No Content" status,
-        # which is the standard for a successful deletion.
-        return Response({"message": "Account deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        # Return a success message
+        return Response({"message": "Account deleted successfully"}, status=status.HTTP_200_OK)
 
 # --- Add Income API ---
 @api_view(['POST'])
